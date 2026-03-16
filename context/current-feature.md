@@ -19,3 +19,5 @@ Not Started
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+
+- **2026-03-16** — Initial Next.js and Tailwind CSS setup (Create Next App), project context files added, default assets cleaned up
