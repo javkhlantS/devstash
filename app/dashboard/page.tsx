@@ -4,20 +4,14 @@ import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
 import { getCollections, getDashboardStats } from "@/lib/db/collections";
-import { items } from "@/lib/mock-data";
-
-const pinnedItems = items.filter((i) => i.isPinned);
-const recentItems = [...items]
-  .sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
-  .slice(0, 10);
+import { getPinnedItems, getRecentItems } from "@/lib/db/items";
 
 export default async function DashboardPage() {
-  const [collections, stats] = await Promise.all([
+  const [collections, stats, pinnedItems, recentItems] = await Promise.all([
     getCollections(),
     getDashboardStats(),
+    getPinnedItems(),
+    getRecentItems(),
   ]);
 
   return (

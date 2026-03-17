@@ -9,7 +9,7 @@ import {
   Star,
   Pin,
 } from "lucide-react";
-import { itemTypes, tags as allTags } from "@/lib/mock-data";
+import type { DashboardItem } from "@/lib/db/items";
 
 const iconMap: Record<
   string,
@@ -25,27 +25,15 @@ const iconMap: Record<
 };
 
 interface ItemRowProps {
-  item: {
-    id: string;
-    title: string;
-    description: string;
-    isFavorite: boolean;
-    isPinned: boolean;
-    itemTypeId: string;
-    tagIds: string[];
-    createdAt: string;
-  };
+  item: DashboardItem;
 }
 
 export function ItemRow({ item }: ItemRowProps) {
-  const type = itemTypes.find((t) => t.id === item.itemTypeId);
-  const Icon = type ? iconMap[type.icon] : null;
-  const itemTags = item.tagIds
-    .map((id) => allTags.find((t) => t.id === id))
-    .filter(Boolean);
+  const Icon = iconMap[item.itemType.icon] ?? null;
+  const color = item.itemType.color;
+  const tags = item.tags.map((t) => t.tag);
 
-  const date = new Date(item.createdAt);
-  const formattedDate = date.toLocaleDateString("en-US", {
+  const formattedDate = item.createdAt.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
@@ -54,11 +42,9 @@ export function ItemRow({ item }: ItemRowProps) {
     <div className="flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50">
       <div
         className="flex size-9 shrink-0 items-center justify-center rounded-lg"
-        style={{ backgroundColor: (type?.color ?? "#6b7280") + "18" }}
+        style={{ backgroundColor: color + "18" }}
       >
-        {Icon && (
-          <Icon className="size-4" style={{ color: type?.color }} />
-        )}
+        {Icon && <Icon className="size-4" style={{ color }} />}
       </div>
 
       <div className="min-w-0 flex-1">
@@ -74,14 +60,14 @@ export function ItemRow({ item }: ItemRowProps) {
         <p className="truncate text-xs text-muted-foreground">
           {item.description}
         </p>
-        {itemTags.length > 0 && (
+        {tags.length > 0 && (
           <div className="mt-1.5 flex gap-1.5">
-            {itemTags.map((tag) => (
+            {tags.map((tag) => (
               <span
-                key={tag!.id}
+                key={tag.id}
                 className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
               >
-                {tag!.name}
+                {tag.name}
               </span>
             ))}
           </div>
