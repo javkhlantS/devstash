@@ -5,36 +5,39 @@ import {
   Heart,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { items, collections } from "@/lib/mock-data";
+import type { DashboardStats } from "@/lib/db/collections";
 
-const stats = [
-  {
-    label: "Total Items",
-    value: items.length,
-    icon: Layers,
-    color: "#3b82f6",
-  },
-  {
-    label: "Collections",
-    value: collections.length,
-    icon: FolderOpen,
-    color: "#8b5cf6",
-  },
-  {
-    label: "Favorite Items",
-    value: items.filter((i) => i.isFavorite).length,
-    icon: Star,
-    color: "#f97316",
-  },
-  {
-    label: "Favorite Collections",
-    value: collections.filter((c) => c.isFavorite).length,
-    icon: Heart,
-    color: "#ec4899",
-  },
-];
+interface StatsCardsProps {
+  stats: DashboardStats;
+}
 
-export function StatsCards() {
+export function StatsCards({ stats: data }: StatsCardsProps) {
+  const stats = [
+    {
+      label: "Total Items",
+      value: data.totalItems,
+      icon: Layers,
+      color: "#3b82f6",
+    },
+    {
+      label: "Collections",
+      value: data.totalCollections,
+      icon: FolderOpen,
+      color: "#8b5cf6",
+    },
+    {
+      label: "Favorite Items",
+      value: data.favoriteItems,
+      icon: Star,
+      color: "#f97316",
+    },
+    {
+      label: "Favorite Collections",
+      value: data.favoriteCollections,
+      icon: Heart,
+      color: "#ec4899",
+    },
+  ];
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {stats.map((stat) => (

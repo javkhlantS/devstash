@@ -28,7 +28,7 @@ interface CollectionCardProps {
   collection: {
     id: string;
     name: string;
-    description: string;
+    description: string | null;
     isFavorite: boolean;
     itemCount: number;
   };

@@ -3,44 +3,8 @@ import { Pin } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
-import { collections, items, itemTypes } from "@/lib/mock-data";
-
-// Get the most common item type color for a collection
-function getDominantTypeColor(collectionId: string) {
-  const collectionItems = items.filter((i) =>
-    (i.collectionIds as readonly string[]).includes(collectionId)
-  );
-  if (collectionItems.length === 0) return undefined;
-
-  const counts: Record<string, number> = {};
-  for (const item of collectionItems) {
-    counts[item.itemTypeId] = (counts[item.itemTypeId] ?? 0) + 1;
-  }
-  const topTypeId = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-  return itemTypes.find((t) => t.id === topTypeId)?.color;
-}
-
-// Derive type icons per collection from items
-function getCollectionTypeIcons(collectionId: string) {
-  const typeIds = [
-    ...new Set(
-      items
-        .filter((i) => (i.collectionIds as readonly string[]).includes(collectionId))
-        .map((i) => i.itemTypeId)
-    ),
-  ];
-  return typeIds
-    .map((id) => {
-      const type = itemTypes.find((t) => t.id === id);
-      return type ? { icon: type.icon, color: type.color } : null;
-    })
-    .filter(Boolean) as { icon: string; color: string }[];
-}
-
-const sortedCollections = [...collections].sort(
-  (a, b) =>
-    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-);
+import { getCollections, getDashboardStats } from "@/lib/db/collections";
+import { items } from "@/lib/mock-data";
 
 const pinnedItems = items.filter((i) => i.isPinned);
 const recentItems = [...items]
@@ -50,7 +14,12 @@ const recentItems = [...items]
   )
   .slice(0, 10);
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [collections, stats] = await Promise.all([
+    getCollections(),
+    getDashboardStats(),
+  ]);
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       {/* Header */}
@@ -62,7 +31,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <StatsCards />
+      <StatsCards stats={stats} />
 
       {/* Collections */}
       <section>
@@ -76,12 +45,12 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sortedCollections.map((col) => (
+          {collections.map((col) => (
             <CollectionCard
               key={col.id}
               collection={col}
-              typeIcons={getCollectionTypeIcons(col.id)}
-              dominantColor={getDominantTypeColor(col.id)}
+              typeIcons={col.typeIcons}
+              dominantColor={col.dominantColor}
             />
           ))}
         </div>
