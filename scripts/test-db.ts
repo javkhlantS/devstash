@@ -10,6 +10,7 @@ async function main() {
 
   console.log("Connecting to database...\n");
 
+  // ─── System Item Types ──────────────────────────────────────
   const itemTypes = await prisma.itemType.findMany({
     where: { isSystem: true },
     orderBy: { name: "asc" },
@@ -20,6 +21,51 @@ async function main() {
     console.log(`  ${type.icon} ${type.name} (${type.color})`);
   }
 
+  // ─── Demo User ──────────────────────────────────────────────
+  const demoUser = await prisma.user.findUnique({
+    where: { email: "demo@devstash.io" },
+  });
+
+  console.log("\nDemo user:");
+  if (demoUser) {
+    console.log(`  Name: ${demoUser.name}`);
+    console.log(`  Email: ${demoUser.email}`);
+    console.log(`  isPro: ${demoUser.isPro}`);
+    console.log(`  Password set: ${!!demoUser.password}`);
+    console.log(`  Email verified: ${demoUser.emailVerified}`);
+  } else {
+    console.log("  NOT FOUND");
+  }
+
+  // ─── Collections & Items ────────────────────────────────────
+  const collections = await prisma.collection.findMany({
+    where: { userId: demoUser?.id },
+    include: {
+      items: {
+        include: {
+          item: {
+            include: { itemType: true },
+          },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  console.log(`\nFound ${collections.length} collections:\n`);
+  for (const col of collections) {
+    const favLabel = col.isFavorite ? " ★" : "";
+    console.log(`  📁 ${col.name}${favLabel} — ${col.description}`);
+    for (const ic of col.items) {
+      const pinLabel = ic.item.isPinned ? " 📌" : "";
+      const favItemLabel = ic.item.isFavorite ? " ★" : "";
+      console.log(
+        `     └─ [${ic.item.itemType.name}] ${ic.item.title}${pinLabel}${favItemLabel}`
+      );
+    }
+  }
+
+  // ─── Counts ─────────────────────────────────────────────────
   const counts = {
     users: await prisma.user.count(),
     items: await prisma.item.count(),
