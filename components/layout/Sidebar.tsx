@@ -29,6 +29,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { useSidebar } from "./SidebarContext";
 import type { SidebarItemType, SidebarCollection } from "@/lib/db/items";
 
@@ -95,6 +96,11 @@ export function Sidebar({ itemTypes, collections, user }: SidebarProps) {
                             />
                           )}
                           {type.name}s
+                          {(type.name === "File" || type.name === "Image") && (
+                            <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-semibold tracking-wide">
+                              PRO
+                            </Badge>
+                          )}
                         </span>
                         <span className="text-xs text-muted-foreground/60">
                           {type._count.items}
