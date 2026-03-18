@@ -69,3 +69,98 @@ export async function getRecentItems(limit = 10): Promise<DashboardItem[]> {
     select: dashboardItemSelect,
   });
 }
+
+// ─── Sidebar Data ────────────────────────────────────────────
+
+export interface SidebarItemType {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  _count: { items: number };
+}
+
+const ITEM_TYPE_ORDER = [
+  "Snippet",
+  "Prompt",
+  "Command",
+  "Note",
+  "File",
+  "Image",
+  "Link",
+];
+
+export async function getItemTypesWithCounts(): Promise<SidebarItemType[]> {
+  const userId = await getDemoUserId();
+
+  const types = await prisma.itemType.findMany({
+    where: { isSystem: true },
+    select: {
+      id: true,
+      name: true,
+      icon: true,
+      color: true,
+      _count: {
+        select: {
+          items: { where: { userId } },
+        },
+      },
+    },
+  });
+
+  return types.sort(
+    (a, b) => ITEM_TYPE_ORDER.indexOf(a.name) - ITEM_TYPE_ORDER.indexOf(b.name)
+  );
+}
+
+export interface SidebarCollection {
+  id: string;
+  name: string;
+  isFavorite: boolean;
+  updatedAt: Date;
+  itemCount: number;
+  dominantColor: string | undefined;
+}
+
+export async function getSidebarCollections(): Promise<SidebarCollection[]> {
+  const userId = await getDemoUserId();
+
+  const collections = await prisma.collection.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    include: {
+      items: {
+        include: {
+          item: {
+            select: {
+              itemType: {
+                select: { color: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return collections.map((col) => {
+    const colorCounts: Record<string, number> = {};
+    for (const ic of col.items) {
+      const color = ic.item.itemType.color;
+      colorCounts[color] = (colorCounts[color] || 0) + 1;
+    }
+
+    const dominant = Object.entries(colorCounts).sort(
+      (a, b) => b[1] - a[1]
+    )[0];
+
+    return {
+      id: col.id,
+      name: col.name,
+      isFavorite: col.isFavorite,
+      updatedAt: col.updatedAt,
+      itemCount: col.items.length,
+      dominantColor: dominant?.[0],
+    };
+  });
+}

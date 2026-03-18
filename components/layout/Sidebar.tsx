@@ -30,12 +30,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSidebar } from "./SidebarContext";
-import {
-  currentUser,
-  itemTypes,
-  itemCountsByType,
-  collections,
-} from "@/lib/mock-data";
+import type { SidebarItemType, SidebarCollection } from "@/lib/db/items";
 
 const iconMap: Record<
   string,
@@ -50,17 +45,19 @@ const iconMap: Record<
   Link: LinkIcon,
 };
 
-const favoriteCollections = collections.filter((c) => c.isFavorite);
-const recentCollections = [...collections]
-  .sort(
-    (a, b) =>
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
-  .filter((c) => !c.isFavorite)
-  .slice(0, 5);
+interface SidebarProps {
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollection[];
+  user: { name: string; email: string };
+}
 
-export function Sidebar() {
+export function Sidebar({ itemTypes, collections, user }: SidebarProps) {
   const { isOpen, close } = useSidebar();
+
+  const favoriteCollections = collections.filter((c) => c.isFavorite);
+  const recentCollections = collections
+    .filter((c) => !c.isFavorite)
+    .slice(0, 5);
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
@@ -84,8 +81,6 @@ export function Sidebar() {
             <nav className="mt-0.5 space-y-0.5">
               {itemTypes.map((type) => {
                 const Icon = iconMap[type.icon];
-                const count =
-                  itemCountsByType[type.id as keyof typeof itemCountsByType];
                 const slug = type.name.toLowerCase() + "s";
 
                 return (
@@ -102,7 +97,7 @@ export function Sidebar() {
                           {type.name}s
                         </span>
                         <span className="text-xs text-muted-foreground/60">
-                          {count}
+                          {type._count.items}
                         </span>
                       </span>
                     </TooltipTrigger>
@@ -150,29 +145,45 @@ export function Sidebar() {
                 </div>
               )}
 
-              {/* All collections */}
-              <div>
-                <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-                  All Collections
-                </span>
-                <nav className="mt-1 space-y-0.5">
-                  {recentCollections.map((col) => (
-                    <Link
-                      key={col.id}
-                      href={`/collections/${col.id}`}
-                      className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      <span className="flex items-center gap-2.5 truncate">
-                        <FolderOpen className="size-4 shrink-0 text-muted-foreground/60" />
-                        <span className="truncate">{col.name}</span>
-                      </span>
-                      <span className="text-xs text-muted-foreground/60">
-                        {col.itemCount}
-                      </span>
-                    </Link>
-                  ))}
-                </nav>
-              </div>
+              {/* Recent collections */}
+              {recentCollections.length > 0 && (
+                <div>
+                  <span className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                    Recent
+                  </span>
+                  <nav className="mt-1 space-y-0.5">
+                    {recentCollections.map((col) => (
+                      <Link
+                        key={col.id}
+                        href={`/collections/${col.id}`}
+                        className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <span className="flex items-center gap-2.5 truncate">
+                          <span
+                            className="size-2.5 shrink-0 rounded-full"
+                            style={{
+                              backgroundColor:
+                                col.dominantColor || "var(--muted-foreground)",
+                            }}
+                          />
+                          <span className="truncate">{col.name}</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground/60">
+                          {col.itemCount}
+                        </span>
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+              )}
+
+              {/* View all collections */}
+              <Link
+                href="/collections"
+                className="mt-2 flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-foreground"
+              >
+                View all collections
+              </Link>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -185,7 +196,7 @@ export function Sidebar() {
           <div className="flex items-center gap-2.5">
             <Avatar size="sm">
               <AvatarFallback className="bg-primary text-[10px] font-medium text-primary-foreground">
-                {currentUser.name
+                {user.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
@@ -193,10 +204,10 @@ export function Sidebar() {
             </Avatar>
             <div className="flex flex-col">
               <span className="text-sm font-medium leading-tight">
-                {currentUser.name}
+                {user.name}
               </span>
               <span className="text-xs text-muted-foreground">
-                {currentUser.email}
+                {user.email}
               </span>
             </div>
           </div>
