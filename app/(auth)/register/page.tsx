@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Mail } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [emailSent, setEmailSent] = useState(false);
@@ -44,8 +47,13 @@ export default function RegisterPage() {
       return;
     }
 
-    setEmailSent(true);
-    setIsLoading(false);
+    if (data.requireVerification) {
+      setEmailSent(true);
+      setIsLoading(false);
+    } else {
+      toast.success("Account created! You can now sign in.");
+      router.push("/sign-in");
+    }
   }
 
   if (emailSent) {
