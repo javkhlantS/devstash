@@ -19,3 +19,11 @@ Read the following to get the full context of the project:
 - `yarn lint` — run ESLint
 
 **IMPORTANT:** Do not add Claude to any commit messages
+
+## Neon Database
+
+- **Project:** `devstash` (ID: `crimson-dream-83612766`)
+- **Development branch:** `br-noisy-tooth-a142t5mj` — always use this branch for queries and migrations
+- **Production branch:** `br-gentle-art-a1sy8xgj` — DO NOT touch unless explicitly instructed
+- Never run queries against other Neon projects unless specified
+- Always pass the development `branchId` when using Neon MCP tools
