@@ -224,7 +224,7 @@ export function Sidebar({ itemTypes, collections, user }: SidebarProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-48">
             <DropdownMenuItem
-              render={<a href="/profile" />}
+              render={<a href="/dashboard/profile" />}
             >
               <User className="size-4" />
               Profile
