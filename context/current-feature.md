@@ -2,7 +2,7 @@
 
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
@@ -26,3 +26,4 @@ Completed
 - **2026-03-19** — Auth credentials: added Credentials provider with split config pattern (placeholder in `auth.config.ts`, bcrypt validation in `auth.ts`), registration API route at `/api/auth/register` with input validation, duplicate check, and bcrypt password hashing
 - **2026-03-19** — Auth UI: custom sign-in page (`/sign-in`) with email/password and GitHub OAuth, custom register page (`/register`) with validation and success toast, reusable `UserAvatar` component (GitHub image or initials fallback), sidebar user area with dropdown menu (Profile link, Sign out), dashboard layout uses `auth()` session, NextAuth configured for custom pages, sonner toast library added
 - **2026-03-19** — Email verification: Resend integration for verification emails on register, `lib/tokens.ts` for token generation/validation with 24hr expiry using existing `VerificationToken` model, `/verify-email` page validates token and sets `emailVerified`, Credentials provider rejects unverified users with `EmailNotVerifiedError`, sign-in page shows specific message for unverified accounts, register page shows "Check your email" card after submission
+- **2026-03-20** — Email verification toggle: `REQUIRE_EMAIL_VERIFICATION` env var (default `false`) controls whether email verification is required on register, when disabled auto-sets `emailVerified`, skips sending verification email, and redirects to sign-in instead of "check email" screen
