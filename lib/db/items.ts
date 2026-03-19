@@ -70,6 +70,23 @@ export async function getRecentItems(limit = 10): Promise<DashboardItem[]> {
   });
 }
 
+// ─── Items by Type ──────────────────────────────────────────
+
+export async function getItemsByType(
+  typeName: string
+): Promise<DashboardItem[]> {
+  const userId = await getDemoUserId();
+
+  return prisma.item.findMany({
+    where: {
+      userId,
+      itemType: { name: typeName },
+    },
+    orderBy: { createdAt: "desc" },
+    select: dashboardItemSelect,
+  });
+}
+
 // ─── Sidebar Data ────────────────────────────────────────────
 
 export interface SidebarItemType {

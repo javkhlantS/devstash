@@ -94,7 +94,7 @@ export function Sidebar({ itemTypes, collections, user }: SidebarProps) {
 
                 return (
                   <Tooltip key={type.id}>
-                    <TooltipTrigger render={<Link href={`/items/${slug}`} />}>
+                    <TooltipTrigger render={<Link href={`/dashboard/items/${slug}`} />}>
                       <span className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
                         <span className="flex items-center gap-2.5">
                           {Icon && (
