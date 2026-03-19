@@ -1,24 +1,12 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Add Credentials provider for email/password authentication
-- Create registration API route at `/api/auth/register` (name, email, password, confirmPassword)
-- Use bcryptjs for password hashing (already installed)
-- Follow split config pattern: placeholder in `auth.config.ts`, real logic in `auth.ts`
-- Verify GitHub OAuth still works after changes
-
 ## Notes
-
-- Password field already exists on User model
-- `auth.config.ts` gets Credentials with `authorize: () => null` placeholder (edge-compatible)
-- `auth.ts` overrides Credentials with actual bcrypt validation
-- Registration validates passwords match, checks for existing user, hashes password, creates user
-- Test with curl and browser sign-in flow
 
 ## History
 
@@ -35,3 +23,4 @@ In Progress
 - **2026-03-18** — Stats & sidebar: replaced mock data in sidebar with real Prisma queries, added `getItemTypesWithCounts()` and `getSidebarCollections()` to `lib/db/items.ts`, sidebar item types show database counts with custom display order, favorite collections keep star icons, recent collections show colored circle based on dominant item type, added "View all collections" link, layout fetches sidebar data server-side and passes as props
 - **2026-03-18** — Pro badge: added shadcn Badge component, PRO badge shown next to Files and Images types in sidebar using secondary variant with compact styling
 - **2026-03-19** — Auth setup: NextAuth v5 with Prisma adapter and GitHub OAuth, split config pattern for edge compatibility (`auth.config.ts` + `auth.ts`), JWT session strategy, `/dashboard` route protection via `proxy.ts`, NextAuth API route, Session type extended with `user.id`
+- **2026-03-19** — Auth credentials: added Credentials provider with split config pattern (placeholder in `auth.config.ts`, bcrypt validation in `auth.ts`), registration API route at `/api/auth/register` with input validation, duplicate check, and bcrypt password hashing
