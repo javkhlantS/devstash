@@ -3,10 +3,19 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import {
+  rateLimiters,
+  getClientIp,
+  rateLimitKey,
+} from "@/lib/rate-limit";
 import authConfig from "./auth.config";
 
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "EMAIL_NOT_VERIFIED";
+}
+
+class RateLimitError extends CredentialsSignin {
+  code = "RATE_LIMITED";
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -43,6 +52,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const password = credentials?.password as string | undefined;
 
         if (!email || !password) return null;
+
+        // Rate limit by IP + email
+        try {
+          const ip = await getClientIp();
+          const key = rateLimitKey(ip, email);
+          const { success } = await rateLimiters.login.limit(key);
+          if (!success) throw new RateLimitError();
+        } catch (e) {
+          if (e instanceof RateLimitError) throw e;
+          // Fail open if Upstash is unavailable
+        }
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.password) return null;
