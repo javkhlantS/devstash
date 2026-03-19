@@ -3,23 +3,18 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getItemTypesWithCounts, getSidebarCollections } from "@/lib/db/items";
-import { prisma } from "@/lib/db";
-
-// TODO: Replace with authenticated user once auth is wired up
-const DEMO_USER_EMAIL = "demo@devstash.io";
+import { auth } from "@/auth";
 
 export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [itemTypes, collections, user] = await Promise.all([
+  const session = await auth();
+
+  const [itemTypes, collections] = await Promise.all([
     getItemTypesWithCounts(),
     getSidebarCollections(),
-    prisma.user.findUniqueOrThrow({
-      where: { email: DEMO_USER_EMAIL },
-      select: { name: true, email: true },
-    }),
   ]);
 
   return (
@@ -31,7 +26,11 @@ export default async function DashboardLayout({
             <Sidebar
               itemTypes={itemTypes}
               collections={collections}
-              user={{ name: user.name || "User", email: user.email }}
+              user={{
+                name: session?.user?.name || "User",
+                email: session?.user?.email || "",
+                image: session?.user?.image ?? null,
+              }}
             />
             <main className="flex-1 overflow-y-auto p-6">
               {children}

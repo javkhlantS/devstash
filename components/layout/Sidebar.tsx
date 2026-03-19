@@ -12,13 +12,21 @@ import {
   ChevronDown,
   Star,
   FolderOpen,
-  Settings,
+  LogOut,
+  User,
   X,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "./UserAvatar";
 import {
   Collapsible,
   CollapsibleContent,
@@ -49,7 +57,7 @@ const iconMap: Record<
 interface SidebarProps {
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
-  user: { name: string; email: string };
+  user: { name: string; email: string; image: string | null };
 }
 
 export function Sidebar({ itemTypes, collections, user }: SidebarProps) {
@@ -198,32 +206,37 @@ export function Sidebar({ itemTypes, collections, user }: SidebarProps) {
       {/* User area */}
       <Separator />
       <div className="px-3 py-3">
-        <div className="flex items-center justify-between rounded-md px-2 py-1.5">
-          <div className="flex items-center gap-2.5">
-            <Avatar size="sm">
-              <AvatarFallback className="bg-primary text-[10px] font-medium text-primary-foreground">
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium leading-tight">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted" />
+            }
+          >
+            <UserAvatar name={user.name} image={user.image} size="sm" />
+            <div className="flex min-w-0 flex-col text-left">
+              <span className="truncate text-sm font-medium leading-tight">
                 {user.name}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="truncate text-xs text-muted-foreground">
                 {user.email}
               </span>
             </div>
-          </div>
-          <Tooltip>
-            <TooltipTrigger render={<Button variant="ghost" size="icon-xs" />}>
-              <Settings className="size-4" />
-            </TooltipTrigger>
-            <TooltipContent side="right">Settings</TooltipContent>
-          </Tooltip>
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-48">
+            <DropdownMenuItem
+              render={<a href="/profile" />}
+            >
+              <User className="size-4" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => signOut({ callbackUrl: "/sign-in" })}
+            >
+              <LogOut className="size-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
