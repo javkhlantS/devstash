@@ -34,7 +34,11 @@ export function SignInForm() {
     });
 
     if (result?.error) {
-      setFormError("Invalid email or password");
+      if (result.code === "EMAIL_NOT_VERIFIED") {
+        setFormError("Please verify your email before signing in. Check your inbox for the verification link.");
+      } else {
+        setFormError("Invalid email or password");
+      }
       setIsLoading(false);
     } else if (result?.url) {
       window.location.href = result.url;

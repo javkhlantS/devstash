@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import Link from "next/link";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,8 +44,32 @@ export default function RegisterPage() {
       return;
     }
 
-    toast.success("Account created! You can now sign in.");
-    router.push("/sign-in");
+    setEmailSent(true);
+    setIsLoading(false);
+  }
+
+  if (emailSent) {
+    return (
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="mb-6 text-sm text-muted-foreground">
+            We&apos;ve sent a verification link to your email address. Click the link to verify your account before signing in.
+          </p>
+          <Link
+            href="/sign-in"
+            className="inline-flex h-8 w-full items-center justify-center rounded-lg border border-border bg-background px-2.5 text-sm font-medium hover:bg-muted hover:text-foreground"
+          >
+            Back to sign in
+          </Link>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
