@@ -1,27 +1,12 @@
-# Current Feature: Item Drawer
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Right-side slide-in drawer (shadcn Sheet) that opens when clicking an item card
-- Works on both dashboard and items list pages
-- Action bar with Favorite, Pin, Copy, Edit, and Delete buttons
-- Client wrapper component to manage drawer state (pages are server components)
-- Full item detail fetched on click via API route (`/api/items/[id]`)
-- Skeleton/loading state while fetching
-- No separate item page — drawer is the detail view
-
 ## Notes
-
-- Use shadcn Sheet component, opens from the right
-- Card data (title, description, tags) already fetched by server component
-- Full detail (content, collections, language, etc.) fetched on click via `/api/items/[id]`
-- Query function in `lib/db/items.ts`, API route calls it with auth check
-- Code editor and item-specific features come later — focus on drawer details display
-- Reference design: `context/screenshots/dashboard-ui-drawer.png`
 
 ## History
 
@@ -46,3 +31,4 @@ In Progress
 - **2026-03-20** — Profile page: `/dashboard/profile` with user info (avatar, email, name, join date, GitHub connection), usage stats (total items/collections, breakdown by item type with icons), change password form (email users only), delete account with confirmation dialog, `lib/db/users.ts` for data fetching, shadcn Dialog component added
 - **2026-03-20** — Rate limiting: Upstash Redis + `@upstash/ratelimit` with sliding window algorithm, reusable `lib/rate-limit.ts` utility with fail-open behavior, login (5/15min by IP+email), register (3/1hr by IP), forgot-password (3/1hr by IP), reset-password (5/15min by IP), 429 responses with `Retry-After` header, `RATE_LIMITED` error handling on sign-in form
 - **2026-03-20** — Items list view: dynamic route at `/dashboard/items/[type]` with slug validation, `getItemsByType()` Prisma query, `ItemCard` component with type-colored left border and icon, responsive 2-column grid on md+, empty state, sidebar links updated to `/dashboard/items/{slug}`
+- **2026-03-20** — Item drawer: right-side shadcn Sheet opens on item card/row click, fetches full item detail via `/api/items/[id]` with `getItemDetail()` query, displays description, content, URL, tags, collections, and dates, action bar with Favorite/Pin/Copy/Edit/Delete buttons (visual only), skeleton loading state, works on both dashboard and items list pages, `DashboardItems` and `ItemListWithDrawer` client wrappers for drawer state
