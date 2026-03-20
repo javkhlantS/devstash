@@ -87,6 +87,85 @@ export async function getItemsByType(
   });
 }
 
+// ─── Item Detail ────────────────────────────────────────────
+
+export interface ItemDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  contentType: string;
+  content: string | null;
+  url: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  language: string | null;
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  itemType: {
+    name: string;
+    icon: string;
+    color: string;
+  };
+  tags: {
+    tag: {
+      id: string;
+      name: string;
+    };
+  }[];
+  collections: {
+    collection: {
+      id: string;
+      name: string;
+    };
+  }[];
+}
+
+export async function getItemDetail(
+  itemId: string
+): Promise<ItemDetail | null> {
+  const userId = await getDemoUserId();
+
+  return prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      contentType: true,
+      content: true,
+      url: true,
+      fileUrl: true,
+      fileName: true,
+      fileSize: true,
+      language: true,
+      isFavorite: true,
+      isPinned: true,
+      createdAt: true,
+      updatedAt: true,
+      itemType: {
+        select: { name: true, icon: true, color: true },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+      collections: {
+        select: {
+          collection: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+  });
+}
+
 // ─── Sidebar Data ────────────────────────────────────────────
 
 export interface SidebarItemType {

@@ -26,9 +26,10 @@ const iconMap: Record<
 
 interface ItemRowProps {
   item: DashboardItem;
+  onClick?: () => void;
 }
 
-export function ItemRow({ item }: ItemRowProps) {
+export function ItemRow({ item, onClick }: ItemRowProps) {
   const Icon = iconMap[item.itemType.icon] ?? null;
   const color = item.itemType.color;
   const tags = item.tags.map((t) => t.tag);
@@ -39,7 +40,10 @@ export function ItemRow({ item }: ItemRowProps) {
   });
 
   return (
-    <div className="flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50">
+    <div
+      className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50${onClick ? " cursor-pointer" : ""}`}
+      onClick={onClick}
+    >
       <div
         className="flex size-9 shrink-0 items-center justify-center rounded-lg"
         style={{ backgroundColor: color + "18" }}

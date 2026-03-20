@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Pin } from "lucide-react";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
-import { ItemRow } from "@/components/dashboard/ItemRow";
+import { DashboardItems } from "@/components/dashboard/DashboardItems";
 import { getCollections, getDashboardStats } from "@/lib/db/collections";
 import { getPinnedItems, getRecentItems } from "@/lib/db/items";
 
@@ -50,40 +49,11 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Pinned Items */}
-      {pinnedItems.length > 0 && (
-        <section>
-          <div className="mb-3 flex items-center gap-2">
-            <Pin className="size-4 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Pinned</h2>
-          </div>
-          <div className="rounded-xl bg-card ring-1 ring-foreground/10">
-            {pinnedItems.map((item, i) => (
-              <div key={item.id}>
-                {i > 0 && (
-                  <div className="mx-3 border-t border-border" />
-                )}
-                <ItemRow item={item} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Recent Items */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">Recent</h2>
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10">
-          {recentItems.map((item, i) => (
-            <div key={item.id}>
-              {i > 0 && (
-                <div className="mx-3 border-t border-border" />
-              )}
-              <ItemRow item={item} />
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Items with Drawer */}
+      <DashboardItems
+        pinnedItems={pinnedItems}
+        recentItems={recentItems}
+      />
     </div>
   );
 }

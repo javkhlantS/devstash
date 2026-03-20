@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ItemCard } from "@/components/items/ItemCard";
+import { ItemListWithDrawer } from "@/components/items/ItemListWithDrawer";
 import { getItemsByType } from "@/lib/db/items";
 
 const VALID_TYPES: Record<string, string> = {
@@ -42,11 +42,7 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {items.map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
-        </div>
+        <ItemListWithDrawer items={items} />
       )}
     </div>
   );

@@ -27,9 +27,10 @@ const iconMap: Record<
 
 interface ItemCardProps {
   item: DashboardItem;
+  onClick?: () => void;
 }
 
-export function ItemCard({ item }: ItemCardProps) {
+export function ItemCard({ item, onClick }: ItemCardProps) {
   const Icon = iconMap[item.itemType.icon] ?? null;
   const color = item.itemType.color;
   const tags = item.tags.map((t) => t.tag);
@@ -41,8 +42,9 @@ export function ItemCard({ item }: ItemCardProps) {
 
   return (
     <Card
-      className="overflow-hidden transition-colors hover:bg-muted/30"
+      className={`overflow-hidden transition-colors hover:bg-muted/30${onClick ? " cursor-pointer" : ""}`}
       style={{ borderLeftColor: color, borderLeftWidth: "3px" }}
+      onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center gap-3 p-4 pb-0">
         <div
