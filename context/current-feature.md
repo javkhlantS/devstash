@@ -1,29 +1,12 @@
-# Current Feature: Item Drawer Edit Mode
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Edit button in drawer action bar toggles inline edit mode (no separate page/modal)
-- Action bar replaced with Save and Cancel buttons in edit mode
-- Editable fields: Title (required), Description, Tags (comma-separated input)
-- Type-specific fields: Content (snippet/prompt/command/note), Language (snippet/command), URL (link)
-- Non-editable display: item type, collections, dates
-- Zod validation in server action with error feedback
-- `updateItem` server action in `actions/items.ts` with `{ success, data, error }` pattern
-- Tag handling: disconnect all existing, connect-or-create new ones
-- Toast on save success/error, `router.refresh()` after save
-- Save button disabled when title is empty
-
 ## Notes
-
-- No form library — controlled inputs with local state
-- Content textarea is plain text, not a code editor (that comes later)
-- Server action validates ownership via `auth()` session
-- Returns updated `ItemDetail` so drawer refreshes without a second fetch
-- Query function `updateItem` goes in `lib/db/items.ts`
 
 ## History
 
@@ -49,3 +32,4 @@ In Progress
 - **2026-03-20** — Rate limiting: Upstash Redis + `@upstash/ratelimit` with sliding window algorithm, reusable `lib/rate-limit.ts` utility with fail-open behavior, login (5/15min by IP+email), register (3/1hr by IP), forgot-password (3/1hr by IP), reset-password (5/15min by IP), 429 responses with `Retry-After` header, `RATE_LIMITED` error handling on sign-in form
 - **2026-03-20** — Items list view: dynamic route at `/dashboard/items/[type]` with slug validation, `getItemsByType()` Prisma query, `ItemCard` component with type-colored left border and icon, responsive 2-column grid on md+, empty state, sidebar links updated to `/dashboard/items/{slug}`
 - **2026-03-20** — Item drawer: right-side shadcn Sheet opens on item card/row click, fetches full item detail via `/api/items/[id]` with `getItemDetail()` query, displays description, content, URL, tags, collections, and dates, action bar with Favorite/Pin/Copy/Edit/Delete buttons (visual only), skeleton loading state, works on both dashboard and items list pages, `DashboardItems` and `ItemListWithDrawer` client wrappers for drawer state
+- **2026-03-20** — Item drawer edit mode: Edit button toggles inline edit mode with Save/Cancel action bar, editable fields (title, description, tags, plus type-specific content/language/URL), `updateItem` server action in `actions/items.ts` with Zod validation and `{ success, data, error }` pattern, `updateItem` query in `lib/db/items.ts` with tag disconnect/reconnect, toast feedback, `router.refresh()` after save, 10 unit tests for server action
