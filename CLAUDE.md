@@ -17,6 +17,9 @@ Read the following to get the full context of the project:
 - `yarn build` — production build
 - `yarn start` — serve production build
 - `yarn lint` — run ESLint
+- `yarn test` — run unit tests (Vitest)
+- `yarn test:watch` — run tests in watch mode
+- `yarn test:coverage` — run tests with coverage report
 
 **IMPORTANT:** Do not add Claude to any commit messages
 

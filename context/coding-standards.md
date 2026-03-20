@@ -90,6 +90,15 @@ Example v4 configuration:
 - Return `{ success, data, error }` pattern from actions
 - Display user-friendly error messages via toast
 
+## Testing
+
+- **Framework:** Vitest (unit tests only)
+- **Scope:** Server actions, API routes, and utility functions — not components
+- **Test location:** Co-locate tests in `__tests__/` directories next to the code (e.g., `lib/__tests__/utils.test.ts`)
+- **Naming:** `*.test.ts` files
+- **Mocking:** Mock external dependencies (Prisma, email, etc.) — don't hit real services in tests
+- Run `yarn test` before committing to ensure tests pass
+
 ## Code Quality
 
 - No commented-out code unless specified
