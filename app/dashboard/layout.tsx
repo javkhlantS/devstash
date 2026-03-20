@@ -2,7 +2,11 @@ import { TopBar } from "@/components/layout/TopBar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { getItemTypesWithCounts, getSidebarCollections } from "@/lib/db/items";
+import {
+  getItemTypesWithCounts,
+  getSidebarCollections,
+  getItemTypes,
+} from "@/lib/db/items";
 import { auth } from "@/auth";
 
 export default async function DashboardLayout({
@@ -12,16 +16,17 @@ export default async function DashboardLayout({
 }>) {
   const session = await auth();
 
-  const [itemTypes, collections] = await Promise.all([
+  const [itemTypes, collections, allItemTypes] = await Promise.all([
     getItemTypesWithCounts(),
     getSidebarCollections(),
+    getItemTypes(),
   ]);
 
   return (
     <TooltipProvider>
       <SidebarProvider>
         <div className="flex h-screen flex-col">
-          <TopBar />
+          <TopBar itemTypes={allItemTypes} />
           <div className="flex flex-1 overflow-hidden">
             <Sidebar
               itemTypes={itemTypes}

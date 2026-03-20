@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Session } from "next-auth";
 
-const { mockAuth, mockUpdateItemQuery } = vi.hoisted(() => ({
+const { mockAuth, mockUpdateItemQuery, mockDeleteItemQuery, mockCreateItemQuery } = vi.hoisted(() => ({
   mockAuth: vi.fn<() => Promise<Session | null>>(),
   mockUpdateItemQuery: vi.fn(),
+  mockDeleteItemQuery: vi.fn(),
+  mockCreateItemQuery: vi.fn(),
 }));
 
 vi.mock("@/auth", () => ({
@@ -12,9 +14,11 @@ vi.mock("@/auth", () => ({
 
 vi.mock("@/lib/db/items", () => ({
   updateItem: mockUpdateItemQuery,
+  deleteItem: mockDeleteItemQuery,
+  createItem: mockCreateItemQuery,
 }));
 
-import { updateItem } from "@/actions/items";
+import { updateItem, deleteItem, createItem } from "@/actions/items";
 
 const validInput = {
   title: "Test Item",
@@ -204,6 +208,185 @@ describe("updateItem", () => {
     expect(result).toEqual({
       success: false,
       error: "Failed to update item",
+    });
+  });
+});
+
+// ─── deleteItem ──────────────────────────────────────────────
+
+describe("deleteItem", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockDeleteItemQuery).not.toHaveBeenCalled();
+  });
+
+  it("returns error when session has no user id", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "" }, expires: "" } as Session);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+  });
+
+  it("returns error when item not found", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+    mockDeleteItemQuery.mockResolvedValue(false);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({ success: false, error: "Item not found" });
+  });
+
+  it("returns success when item deleted", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+    mockDeleteItemQuery.mockResolvedValue(true);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({ success: true });
+    expect(mockDeleteItemQuery).toHaveBeenCalledWith("item-1", "user-1");
+  });
+
+  it("handles unexpected errors gracefully", async () => {
+    mockAuth.mockRejectedValue(new Error("DB down"));
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Failed to delete item",
+    });
+  });
+});
+
+// ─── createItem ──────────────────────────────────────────────
+
+const validCreateInput = {
+  title: "New Item",
+  description: "A description",
+  content: "some content",
+  url: null,
+  language: "javascript",
+  itemTypeId: "type-1",
+  tags: ["react"],
+};
+
+describe("createItem", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null);
+
+    const result = await createItem(validCreateInput);
+
+    expect(result).toEqual({ success: false, error: "Not authenticated" });
+    expect(mockCreateItemQuery).not.toHaveBeenCalled();
+  });
+
+  it("returns validation errors for empty title", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+
+    const result = await createItem({ ...validCreateInput, title: "" });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toHaveProperty("title");
+  });
+
+  it("returns validation errors for empty itemTypeId", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+
+    const result = await createItem({ ...validCreateInput, itemTypeId: "" });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toHaveProperty("itemTypeId");
+  });
+
+  it("returns validation errors for invalid URL", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+
+    const result = await createItem({
+      ...validCreateInput,
+      url: "not-a-url",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toHaveProperty("url");
+  });
+
+  it("normalizes empty strings to null", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+    mockCreateItemQuery.mockResolvedValue(mockItemDetail);
+
+    await createItem({
+      ...validCreateInput,
+      description: "",
+      content: "",
+      language: "",
+      url: "",
+    });
+
+    expect(mockCreateItemQuery).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        description: null,
+        content: null,
+        language: null,
+        url: null,
+      })
+    );
+  });
+
+  it("returns created item on success", async () => {
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1" },
+      expires: "",
+    });
+    mockCreateItemQuery.mockResolvedValue(mockItemDetail);
+
+    const result = await createItem(validCreateInput);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.id).toBe("item-1");
+    }
+  });
+
+  it("handles unexpected errors gracefully", async () => {
+    mockAuth.mockRejectedValue(new Error("DB down"));
+
+    const result = await createItem(validCreateInput);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Failed to create item",
     });
   });
 });

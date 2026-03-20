@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Search, Plus, Box, PanelLeft, FolderPlus, FilePlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSidebar } from "./SidebarContext";
+import { NewItemDialog } from "@/components/items/NewItemDialog";
+import type { ItemTypeOption } from "@/lib/db/items";
 
-export function TopBar() {
+interface TopBarProps {
+  itemTypes: ItemTypeOption[];
+}
+
+export function TopBar({ itemTypes }: TopBarProps) {
   const { toggle } = useSidebar();
+  const [newItemOpen, setNewItemOpen] = useState(false);
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border px-4 md:px-6">
@@ -48,7 +56,7 @@ export function TopBar() {
           <Plus data-icon="inline-start" />
           New Collection
         </Button>
-        <Button size="sm" className="hidden sm:inline-flex">
+        <Button size="sm" className="hidden sm:inline-flex" onClick={() => setNewItemOpen(true)}>
           <Plus data-icon="inline-start" />
           New Item
         </Button>
@@ -63,13 +71,19 @@ export function TopBar() {
               <FolderPlus />
               New Collection
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setNewItemOpen(true)}>
               <FilePlus />
               New Item
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <NewItemDialog
+        open={newItemOpen}
+        onOpenChange={setNewItemOpen}
+        itemTypes={itemTypes}
+      />
     </header>
   );
 }

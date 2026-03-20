@@ -2,7 +2,11 @@
 
 import { z } from "zod";
 import { auth } from "@/auth";
-import { updateItem as updateItemQuery } from "@/lib/db/items";
+import {
+  updateItem as updateItemQuery,
+  deleteItem as deleteItemQuery,
+  createItem as createItemQuery,
+} from "@/lib/db/items";
 
 const updateItemSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
@@ -55,5 +59,74 @@ export async function updateItem(
     return { success: true as const, data: updated };
   } catch {
     return { success: false as const, error: "Failed to update item" };
+  }
+}
+
+// ─── Delete Item ─────────────────────────────────────────────
+
+export async function deleteItem(itemId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false as const, error: "Not authenticated" };
+    }
+
+    const deleted = await deleteItemQuery(itemId, session.user.id);
+    if (!deleted) {
+      return { success: false as const, error: "Item not found" };
+    }
+
+    return { success: true as const };
+  } catch {
+    return { success: false as const, error: "Failed to delete item" };
+  }
+}
+
+// ─── Create Item ─────────────────────────────────────────────
+
+const createItemSchema = z.object({
+  title: z.string().trim().min(1, "Title is required"),
+  description: z.string().trim().nullable(),
+  content: z.string().nullable(),
+  url: z
+    .string()
+    .trim()
+    .url("Must be a valid URL")
+    .nullable()
+    .or(z.literal("")),
+  language: z.string().trim().nullable(),
+  itemTypeId: z.string().min(1, "Item type is required"),
+  tags: z.array(z.string().trim().min(1)).default([]),
+});
+
+export type CreateItemInput = z.infer<typeof createItemSchema>;
+
+export async function createItem(data: CreateItemInput) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false as const, error: "Not authenticated" };
+    }
+
+    const parsed = createItemSchema.safeParse(data);
+    if (!parsed.success) {
+      return {
+        success: false as const,
+        error: parsed.error.flatten().fieldErrors,
+      };
+    }
+
+    const normalized = {
+      ...parsed.data,
+      description: parsed.data.description || null,
+      content: parsed.data.content || null,
+      url: parsed.data.url || null,
+      language: parsed.data.language || null,
+    };
+
+    const created = await createItemQuery(session.user.id, normalized);
+    return { success: true as const, data: created };
+  } catch {
+    return { success: false as const, error: "Failed to create item" };
   }
 }

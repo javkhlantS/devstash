@@ -23,8 +23,17 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import type { ItemDetail } from "@/lib/db/items";
-import { updateItem } from "@/actions/items";
+import { updateItem, deleteItem } from "@/actions/items";
 
 // Item types that show the content field
 const CONTENT_TYPES = ["snippet", "prompt", "command", "note"];
@@ -62,6 +71,8 @@ export function ItemDrawer({ itemId, onClose }: ItemDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState<EditFormState>({
     title: "",
     description: "",
@@ -96,6 +107,26 @@ export function ItemDrawer({ itemId, onClose }: ItemDrawerProps) {
       setEditing(false);
     }
   }, [itemId, fetchItem]);
+
+  const handleDelete = async () => {
+    if (!item) return;
+    setDeleting(true);
+    try {
+      const result = await deleteItem(item.id);
+      if (result.success) {
+        toast.success("Item deleted");
+        setDeleteOpen(false);
+        onClose();
+        router.refresh();
+      } else {
+        toast.error(result.error ?? "Failed to delete item");
+      }
+    } catch {
+      toast.error("Failed to delete item");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleEdit = () => {
     if (!item) return;
@@ -276,6 +307,7 @@ export function ItemDrawer({ itemId, onClose }: ItemDrawerProps) {
                     icon={Trash2}
                     label="Delete"
                     className="text-muted-foreground hover:text-red-500"
+                    onClick={() => setDeleteOpen(true)}
                   />
                 </>
               )}
@@ -301,6 +333,31 @@ export function ItemDrawer({ itemId, onClose }: ItemDrawerProps) {
           </>
         ) : null}
       </SheetContent>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Item</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &ldquo;{item?.title}&rdquo;? This
+              action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="secondary" />}>
+              Cancel
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sheet>
   );
 }

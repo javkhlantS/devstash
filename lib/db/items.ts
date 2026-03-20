@@ -253,6 +253,131 @@ export async function updateItem(
   return updated;
 }
 
+// ─── Delete Item ─────────────────────────────────────────────
+
+export async function deleteItem(
+  itemId: string,
+  _userId: string
+): Promise<boolean> {
+  // TODO: Replace getDemoUserId() with real userId once auth is fully wired up
+  const userId = await getDemoUserId();
+
+  const existing = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { id: true },
+  });
+
+  if (!existing) return false;
+
+  await prisma.item.delete({ where: { id: itemId } });
+  return true;
+}
+
+// ─── Create Item ─────────────────────────────────────────────
+
+export interface CreateItemData {
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  itemTypeId: string;
+  tags: string[];
+}
+
+export async function createItem(
+  _userId: string,
+  data: CreateItemData
+): Promise<ItemDetail> {
+  // TODO: Replace getDemoUserId() with real userId once auth is fully wired up
+  const userId = await getDemoUserId();
+
+  const itemType = await prisma.itemType.findUnique({
+    where: { id: data.itemTypeId },
+    select: { name: true },
+  });
+
+  const contentType =
+    itemType?.name === "Link" ? "url" : itemType?.name === "File" || itemType?.name === "Image" ? "file" : "text";
+
+  const item = await prisma.item.create({
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      contentType,
+      userId,
+      itemTypeId: data.itemTypeId,
+      tags: {
+        create: data.tags.map((tagName) => ({
+          tag: {
+            connectOrCreate: {
+              where: {
+                name_userId: { name: tagName, userId },
+              },
+              create: { name: tagName, userId },
+            },
+          },
+        })),
+      },
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      contentType: true,
+      content: true,
+      url: true,
+      fileUrl: true,
+      fileName: true,
+      fileSize: true,
+      language: true,
+      isFavorite: true,
+      isPinned: true,
+      createdAt: true,
+      updatedAt: true,
+      itemType: {
+        select: { name: true, icon: true, color: true },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+      collections: {
+        select: {
+          collection: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+  });
+
+  return item;
+}
+
+// ─── Get Item Types ──────────────────────────────────────────
+
+export interface ItemTypeOption {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+}
+
+export async function getItemTypes(): Promise<ItemTypeOption[]> {
+  return prisma.itemType.findMany({
+    where: { isSystem: true },
+    select: { id: true, name: true, icon: true, color: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 // ─── Sidebar Data ────────────────────────────────────────────
 
 export interface SidebarItemType {
