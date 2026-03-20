@@ -9,7 +9,7 @@ export default defineConfig({
     exclude: ["node_modules", ".next"],
     coverage: {
       provider: "v8",
-      include: ["lib/**", "app/api/**"],
+      include: ["lib/**", "app/api/**", "actions/**"],
       exclude: ["lib/mock-data.ts"],
     },
   },

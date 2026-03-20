@@ -166,6 +166,93 @@ export async function getItemDetail(
   });
 }
 
+// ─── Update Item ────────────────────────────────────────────
+
+export interface UpdateItemData {
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+}
+
+export async function updateItem(
+  itemId: string,
+  _userId: string,
+  data: UpdateItemData
+): Promise<ItemDetail | null> {
+  // TODO: Replace getDemoUserId() with real userId once auth is fully wired up
+  const userId = await getDemoUserId();
+
+  // Verify ownership
+  const existing = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { id: true },
+  });
+
+  if (!existing) return null;
+
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      tags: {
+        deleteMany: {},
+        create: data.tags.map((tagName) => ({
+          tag: {
+            connectOrCreate: {
+              where: {
+                name_userId: { name: tagName, userId },
+              },
+              create: { name: tagName, userId },
+            },
+          },
+        })),
+      },
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      contentType: true,
+      content: true,
+      url: true,
+      fileUrl: true,
+      fileName: true,
+      fileSize: true,
+      language: true,
+      isFavorite: true,
+      isPinned: true,
+      createdAt: true,
+      updatedAt: true,
+      itemType: {
+        select: { name: true, icon: true, color: true },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+      collections: {
+        select: {
+          collection: {
+            select: { id: true, name: true },
+          },
+        },
+      },
+    },
+  });
+
+  return updated;
+}
+
 // ─── Sidebar Data ────────────────────────────────────────────
 
 export interface SidebarItemType {
